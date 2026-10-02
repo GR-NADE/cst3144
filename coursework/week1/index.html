@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script type = "module">
+        const {createApp} = Vue
+        const myApp = createApp({
+            data()
+            {
+                return {
+                    subject: "Full-stack Development",
+                    location: "Bounds Green 02",
+                    price: "free",
+                    building: {
+                        image: "images/hohyeong-lee-e0uCDHd19U4-unsplash.jpg",
+                        alt: "Bounds Green Building"
+                    }
+                }
+            }
+        })
+        myApp.mount("#app")
+    </script>
+
+    <div id = "app">
+        <img v-bind:src = "building.image" v-bind:alt = "building.alt" width="300">
+        <h2 v-text = "subject"></h3>
+        <h3 v-text = "location"></h3>
+        <h3 v-text = "price"></h3>
+    </div>
+</body>
+</html>

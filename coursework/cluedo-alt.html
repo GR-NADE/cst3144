@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+</head>
+</head>
+<body>
+    <div id="cluedo">
+        <h1 v-text = "title"></h1>
+        <ul>
+            <li v-for="suspect in suspects" v-bind:style="{color: suspect.color}">
+                {{suspect.name}} is {{suspect.color}}
+            </li>
+        </ul>
+
+    <script type="module">
+        const {createApp} = Vue
+        const myApp = createApp({
+            data(){
+                return{
+                    title:"Cluedo",
+                    suspects:[
+                        {
+                            name: "Col Mustard",
+                            color: "yellow"
+                        },
+                        {
+                            name:"Rev Green",
+                            color:"green"
+                        },
+                        {
+                            name: "Miss Scarlett",
+                            color: "red",
+                        },
+                        {
+                            name: "Mrs White",
+                            color: "black",
+                        },
+                        {
+                            name: "Mrs Peacock",
+                            color: "blue",
+                        },
+                        {
+                            name: "Professor Plum",
+                            color: "purple",
+                        },
+                    ]
+                }
+            }
+        })
+        myApp.mount('#cluedo')
+    </script>
+
+    <div id = "app">
+        <h2 v-text = "subject"></h3>
+        <h3 v-text = "location"></h3>
+        <h3 v-text = "price"></h3>
+    </div>
+</body>
+</html>
