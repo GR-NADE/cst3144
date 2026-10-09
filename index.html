@@ -1,3 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mini Bookshop</title>
+  <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      padding: 40px 16px;
+      min-height: 100vh;
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      color: #2e1065;
+      background: linear-gradient(160deg, #f5f3ff 0%, #ede9fe 55%, #e9d5ff 100%);
+    }
+
+    #app {
+      max-width: 640px;
+      margin: 0 auto;
+      padding: 28px 26px 34px;
+      background: #ffffff;
+      border: 1px solid #ddd6fe;
+      border-radius: 18px;
+      box-shadow: 0 18px 40px rgba(76, 29, 149, 0.16);
+    }
+
+    h1 {
+      margin: 0 0 20px;
+      padding-bottom: 12px;
+      font-size: 1.8rem;
+      letter-spacing: -0.02em;
+      color: #5b21b6;
+      border-bottom: 3px solid #ede9fe;
+    }
+
+    /* ---- toolbar: input + cart badge ---- */
+    #app > div:first-of-type {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 22px;
+    }
+
+    input[type="text"] {
+      flex: 1;
+      padding: 11px 14px;
+      font-family: inherit;
+      font-size: 15px;
+      color: #2e1065;
+      background: #faf5ff;
+      border: 2px solid #ddd6fe;
+      border-radius: 10px;
+      outline: none;
+      transition: border-color .2s, box-shadow .2s, background .2s;
+    }
+
+    input[type="text"]::placeholder { color: #a78bfa; }
+
+    input[type="text"]:focus {
+      background: #ffffff;
+      border-color: #8b5cf6;
+      box-shadow: 0 0 0 4px rgba(139, 92, 246, .18);
+    }
+
+    #app > div:first-of-type span {
+      padding: 9px 16px;
+      font-size: 14px;
+      font-weight: 600;
+      white-space: nowrap;
+      color: #ffffff;
+      background: linear-gradient(135deg, #8b5cf6, #6d28d9);
+      border-radius: 999px;
+      box-shadow: 0 4px 12px rgba(109, 40, 217, .28);
+    }
+
+    /* ---- book cards ---- */
+    #app > div:not(:first-of-type) {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      padding: 14px 18px;
+      margin-bottom: 12px;
+      background: #faf5ff;
+      border: 1px solid #e9d5ff;
+      border-left: 5px solid #8b5cf6;
+      border-radius: 12px;
+      transition: transform .15s, background .2s, box-shadow .2s;
+    }
+
+    #app > div:not(:first-of-type):hover {
+      background: #f3e8ff;
+      transform: translateX(3px);
+      box-shadow: 0 6px 18px rgba(124, 58, 237, .15);
+    }
+
+    /* book title */
+    #app > div:not(:first-of-type) > div > div:first-child {
+      margin-bottom: 3px;
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: #4c1d95;
+    }
+
+    /* author + price */
+    #app > div:not(:first-of-type) > div > div:last-child {
+      font-size: .875rem;
+      color: #7c3aed;
+    }
+
+    /* ---- add to cart button ---- */
+    button {
+      padding: 10px 18px;
+      font-family: inherit;
+      font-size: 14px;
+      font-weight: 600;
+      white-space: nowrap;
+      color: #ffffff;
+      background: linear-gradient(135deg, #a855f7, #7c3aed);
+      border: none;
+      border-radius: 9px;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(124, 58, 237, .3);
+      transition: transform .12s, filter .2s, box-shadow .2s;
+    }
+
+    button:hover {
+      filter: brightness(1.08);
+      box-shadow: 0 6px 16px rgba(124, 58, 237, .42);
+    }
+
+    button:active { transform: scale(.96); }
+
+    button:focus-visible {
+      outline: 3px solid #c4b5fd;
+      outline-offset: 2px;
+    }
+    p {
+      margin: 8px 0 0;
+      padding: 22px 12px;
+      text-align: center;
+      font-style: italic;
+      color: #7c3aed;
+      background: #f5f3ff;
+      border: 1px dashed #c4b5fd;
+      border-radius: 12px;
+    }
+
+    #success {
+      display: none;
+      color: #16a34a;
+      font-weight: bold;
+    }
+    #success.show { display: block; }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <h1>Mini Bookshop</h1>
+
+    <div>
+      <input
+        type="text"
+        v-model="search"
+        placeholder="Search by title or author..."
+      />
+      <span>{{ cart.length }} item(s)</span>
+    </div>
+
+    <div v-for="book in filteredBooks" :key="book.id">
+      <div>
+        <div>{{ book.title }}</div>
+        <div>by {{ book.author }} — ${{ book.price }}</div>
+      </div>
+      <button @click="addToCart(book)">Add to cart</button>
+    </div>
+
+    <p v-if="filteredBooks.length === 0">
+      No books match "{{ search }}".
+    </p>
+  </div>
+
+  <script>
+    const { createApp } = Vue;
+
+    createApp({
+      data() {
+        return {
+          search: "",
+          cart: [],
+          books: [
+            { id: 1, title: "The Hobbit", author: "J.R.R. Tolkien", price: 12 },
+            { id: 2, title: "Dune", author: "Frank Herbert", price: 15 },
+            { id: 3, title: "1984", author: "George Orwell", price: 10 },
+            { id: 4, title: "The Name of the Wind", author: "Patrick Rothfuss", price: 18 },
+            { id: 5, title: "Neuromancer", author: "William Gibson", price: 14 }
+          ]
+        };
+      },
+      computed: {
+        filteredBooks() {
+          const query = this.search.trim().toLowerCase();
+          if (!query) return this.books;
+          return this.books.filter(
+            (book) =>
+              book.title.toLowerCase().includes(query) ||
+              book.author.toLowerCase().includes(query)
+          );
+        }
+      },
+      methods: {
+        addToCart(book) {
+          this.cart.push(book);
+        }
+      }
+    }).mount("#app");
+  </script>
+
+  <p id="success">Successfully added to cart</p>
+  <script>
+    const app = document.querySelector("#app");
+    const success = document.querySelector("#success");
+    app.addEventListener("click", (e) => {
+      if (e.target.tagName === "BUTTON") {
+        success.classList.add("show");
+        setTimeout(() => success.classList.remove("show"), 1500);
+      }
+    });
+  </script>
+</body>
+</html>
+
+<!-- <!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Interactivity Example</title>
+    </head>
+    <body>
+        <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+
+        <div id = "div">
+            <p> Good morning,  {{fullName}}. </p>
+            <p>You have {{unreadEmails}} unread Emails and (???) emails in total. </p>
+            <button v-on:click="readEmail()">Read an email</button>
+            <button v-bind:disabled="false"> Get more email</button>
+        </div>
+
+        <script type = "module">
+            const {createApp} = Vue
+            const myApp = createApp({
+                data()
+                {
+                    return {
+                        firstName: "Victor",
+                        lastName: "Ikenua",
+                        unreadEmails: "2",
+                        readEmails: "77",
+                    }
+                },
+                computed: {
+                    fullName: function() {
+                        return this.firstName + " " + this.lastName;
+                    },
+                },
+                methods: {
+                    readEmail() {
+                        this.unreadEmails = this.unreadEmails - 1;
+                    },
+                }
+            })
+            myApp.mount("#div")
+        </script>
+    </body>
+</html> -->
+
 <!-- <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -21,7 +301,7 @@
 </body>
 </html> -->
 
-<!DOCTYPE html>
+<!-- <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -48,6 +328,6 @@
         </script>
     </div>
 </body>
-</html>
+</html> -->
 
 <!-- This is a simple age checker built with Vue.js. It takes a person's age and uses Vue's conditional rendering to determine ehat category they fall into. So if the age is 13 or below, it displays child. If it's between 14 and 18, it displays teenager. And if it's above 18, it displays adult. -->

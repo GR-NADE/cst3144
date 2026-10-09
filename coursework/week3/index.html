@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang = "en">
+    <head>
+        <meta charset = "UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Document</title>
+    </head>
+    <body>
+        <script src = "https://unpkg.com/vue@3/dist/vue.global.js"></script>
+        <script src = "index.js"></script>
+        <div id = "app">
+            <h1 v-text = "sitename"></h1>
+            <div v-if = "!displayCart">
+                <div v-for = "product in products" v-bind:key = "product.id">
+                    <figure>
+                        <img v-bind:src = "product.image" width = 300>
+                    </figure>
+                    <h2 v-text = "product.title"></h2>
+                    <p v-text = "product.description"></p>
+                    <p>Price: £{{ product.price }}</p>
+                    <p>Availability: {{ product.availability }} available.</p>
+                    <button v-on:click = "addToCart(product)" v-bind:disabled = "!canAddToCart(product)">Add to cart</button>
+                </div>
+            </div>
+
+            <div v-else>
+                <h3>Checkout</h2>
+                <p>You have {{ numberOfItems }} item(s) in your cart.</p>
+
+                <p>Name: <input v-model = "order.name"></p>
+                <p>Telephone: <input v-model = "order.telephone"></p>
+
+                <button v-on:click = "checkout" v-bind:disabled = "!canCheckout">
+                    Checkout
+                </button>
+
+                <p v-if = "orderConfirmed">Order confirmed! Thank you, {{ order.name }}</p>
+            </div>
+
+            <button v-on:click = "toggleDisplayCart" v-bind:disabled = "numberOfItems === 0">
+                {{ displayCart ? "Back" : "Checkout (" + numberOfItems +")" }}
+            </button>
+
+            <p>Cart: {{ cart }}</p>
+        </div>
+
+        <script type = "module">
+            const {createApp} = Vue
+            const petstore = createApp({
+                data() {
+                    return {
+                        sitename: "Pet Depot",
+                        products: productList,
+                        cart: [],
+                        displayCart: false,
+                        order: {
+                            name: "",
+                            telephone: "",
+                        },
+                        orderConfirmed: false
+                    }
+                },
+                computed: {
+                    numberOfItems() {
+                        return this.cart.length
+                    },
+                    canCheckout() {
+                        return this.order.name !== "" && this.order.telephone !== ""
+                    }
+                },
+                methods: {
+                    canAddToCart(product) {
+                        return product.availability > 0
+                    },
+                    addToCart(product) {
+                        this.cart.push(product.id)
+                        product.availability--
+                    },
+                    toggleDisplayCart() {
+                        this.displayCart = !this.displayCart
+                    },
+                    checkout() {
+                        this.orderConfirmed = true
+                        this.cart = []
+                    }
+                }
+            })
+            petstore.mount('#app')
+        </script>
+    </body>
+</html>

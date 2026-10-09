@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang = "en">
+    <head>
+        <meta charset = "UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Document</title>
+    </head>
+    <body>
+        <script src = "https://unpkg.com/vue@3/dist/vue.global.js"></script>
+        <div id = "app">
+            <h1 v-text = "sitename"></h1>
+            <div v-if = "!displayCart">
+                <figure>
+                    <img v-bind:src = "product.image" width = 300>
+                </figure>
+                <h2 v-text = "product.title"></h2>
+                <p v-text = "product.description"></p>
+                <p>Price: £{{ product.price }}</p>
+                <p>ID: {{ product.id }}</p>
+                <p>Availability: {{ product.availability }} slots left</p>
+                <button v-on:click = "addToCart()" v-bind:disabled = "!canAddToCart">Add to cart</button>
+            </div>
+
+            <div v-else>
+                <h3>Checkout</h2>
+                <p>You have {{ numberOfItems }} item(s) in your cart.</p>
+            </div>
+
+            <button v-on:click = "toggleDisplayCart" v-bind:disabled = "numberOfItems === 0">
+                {{ displayCart ? "Back" : "Checkout (" + numberOfItems +")" }}
+            </button>
+
+            <p>Cart: {{ cart }}</p>
+        </div>
+
+        <script type = "module">
+            const {createApp} = Vue
+            const petstore = createApp({
+                data() {
+                    return {
+                        sitename: "Pet Depot",
+                        product: {
+                            id: 1,
+                            title: "Cat Food, 25lb bag",
+                            description: "A 25 pound bag of irresistible," + "organic goodness for your cat.",
+                            price: 2000,
+                            image: "images/catFood.jpg",
+                            availability: 5
+                        },
+                        cart: [],
+                        displayCart: false
+                    }
+                },
+                computed: {
+                    canAddToCart() {
+                        return this.product.availability > 0
+                    },
+                    numberOfItems() {
+                        return this.cart.length
+                    }
+                },
+                methods: {
+                    addToCart() {
+                        this.cart.push(this.product.id)
+                        this.product.availability--
+                    },
+                    toggleDisplayCart() {
+                        this.displayCart = !this.displayCart
+                    }
+                }
+            })
+            petstore.mount('#app')
+        </script>
+    </body>
+</html>
